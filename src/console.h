@@ -78,19 +78,19 @@ BOOL WINAPI SetCurrentConsoleFontEx(HANDLE, BOOL, PCONSOLE_FONT_INFOEX);
 #define SCROLL_UP(n) CSI #n "S"
 #define SCROLL_DOWN(n) CSI #n "T"
 
-bool running = false;
+static bool running = false;
 
-CONSOLE_FONT_INFOEX defaultFont;
-CONSOLE_SCREEN_BUFFER_INFO defaultScreen;
-COORD defaultSize;
+static CONSOLE_FONT_INFOEX defaultFont;
+static CONSOLE_SCREEN_BUFFER_INFO defaultScreen;
+static COORD defaultSize;
 
-bool keys[0xFF];
-float offtimers[0xFF];
-float keytimers[0xFF];
-long long last;
+static bool keys[0xFF];
+static float offtimers[0xFF];
+static float keytimers[0xFF];
+static long long last;
 
-float keyrepeatrate = 0.06f;
-float keyrepeatdelay = 0.2f;
+static float keyrepeatrate = 0.06f;
+static float keyrepeatdelay = 0.2f;
 
 extern "C" __declspec(dllexport)
 inline void set_title(const char *c)
@@ -238,7 +238,11 @@ inline void set_font(int w, int h, const wchar_t *c)
 	font.dwFontSize.Y = (short)h;
 	font.FontWeight = 400;
 	font.FontFamily = 0;
+#ifdef _MSC_VER
+	wcscpy_s(font.FaceName, c);
+#else
 	wcscpy(font.FaceName, c);
+#endif
 	SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), false, &font);
 #endif
 }
@@ -258,11 +262,6 @@ inline void set_size(int w, int h)
 	rect.Bottom = hh - 1;
 	SetConsoleWindowInfo(GetStdHandle(STD_OUTPUT_HANDLE), TRUE, &rect);
 #endif
-}
-
-inline void flush_input()
-{
-	FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 }
 
 extern "C" __declspec(dllexport)
@@ -286,19 +285,19 @@ inline int get_height()
 }
 
 extern "C" __declspec(dllexport)
-void set_repeat_delay(float delay)
+inline void set_repeat_delay(float delay)
 {
 	keyrepeatdelay = delay;
 }
 
 extern "C" __declspec(dllexport)
-void set_repeat_rate(float rate)
+inline void set_repeat_rate(float rate)
 {
 	keyrepeatrate = rate;
 }
 
 extern "C" __declspec(dllexport)
-void poll_events(void(p_key)(int, bool))
+inline void poll_events(void(p_key)(int, bool))
 {
 #ifdef _WIN32
 	INPUT_RECORD records[32];

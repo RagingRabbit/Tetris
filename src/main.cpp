@@ -407,12 +407,6 @@ int brightness(int col, float brightness)
 	return (r << 16) | (g << 8) | (b << 0);
 }
 
-float roundf(float var)
-{
-	float value = (int)(var * 100 + .5);
-	return (float)value / 100;
-}
-
 void draw()
 {
 	// Draw next piece
