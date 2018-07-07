@@ -579,7 +579,7 @@ void end()
 int main()
 {
 	init_scr();
-	printf(USE_ALTERNATE_BUFFER CLEAR_SCREEN HIDE_CURSOR);
+	printf(USE_ALTERNATE_BUFFER  CLEAR_SCREEN  HIDE_CURSOR);
 	set_font(16, 16, L"Terminal");
 	set_size(30, 40);
 
