@@ -1,3 +1,2 @@
 ﻿  main.cpp
-d:\projects\c++\tetris\tetris\src\main.cpp(171): warning C4715: 'calculate_score': not all control paths return a value
   Tetris.vcxproj -> D:\PROJECTS\C++\Tetris\Debug\Tetris.exe

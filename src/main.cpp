@@ -6,7 +6,7 @@
 #define BOARD_WIDTH 10
 #define BOARD_HEIGHT (18 + INVISIBLE_HEIGHT)
 
-#define GAME_OVER_TIMER 1.0f
+#define GAME_OVER_TIMER 2.0f
 
 #define LEGACY_COLORS false
 
@@ -151,7 +151,7 @@ void init()
 
 void game_over()
 {
-	print_s(11, 32, "Game Over", 0x770000, 0);
+	print_s(11, 32, "Game Over", 0xFF4444, 0);
 	gameovertimer = 0.0f;
 }
 
@@ -167,6 +167,8 @@ int calculate_score(int lines)
 		return 300;
 	case 4:
 		return 1200;
+	default:
+		return 0;
 	}
 }
 
@@ -497,8 +499,8 @@ void update(float delta)
 		if (gameovertimer >= GAME_OVER_TIMER)
 		{
 			gameovertimer = -1.0f;
+			print_s(8, 33, ("Your score: " + std::to_string(score)).c_str(), 0xFF4444, 0);
 			init_game();
-			print_s(4, 33, "Press any key to restart", 0x770000, 0);
 			_getch();
 			printf(CLEAR_SCREEN);
 		}
