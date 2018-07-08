@@ -206,7 +206,6 @@ void check_lines()
 		{
 			board.insert(board.begin(), 0);
 		}
-		numlines++;
 	}
 	score += calculate_score(fulllines.size());
 	numlines += fulllines.size();
