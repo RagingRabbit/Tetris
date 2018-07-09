@@ -7,6 +7,7 @@
 #define BOARD_HEIGHT (18 + INVISIBLE_HEIGHT)
 
 #define GAME_OVER_TIMER 2.0f
+#define KEY_REPEAT_DELAY 0.2f
 
 #define LEGACY_COLORS false
 
@@ -44,8 +45,9 @@ float dtimer;
 float gameovertimer;
 float globaltimer;
 
-int lasttype, nexttype;
+PieceType lasttype, nexttype;
 Piece *current_piece;
+Piece *hold_piece;
 
 int score;
 int numlines;
@@ -141,7 +143,7 @@ void init_game()
 
 void init()
 {
-	set_repeat_delay(0.2f);
+	set_repeat_delay(KEY_REPEAT_DELAY);
 	set_repeat_rate(0.02f);
 
 	srand((int)time(0));
@@ -261,24 +263,23 @@ int raycast()
 	return 0;
 }
 
-int get_random_type()
+PieceType get_random_type()
 {
 	int type = -1;
 	while ((type = rand() % 7 + 1) == lasttype)
 	{
 	}
-	return type;
+	return (PieceType)type;
 }
 
-void spawn_piece()
+void spawn_piece(PieceType type, bool generatenext)
 {
-	if (nexttype == 0)
+	if (generatenext)
 	{
 		nexttype = get_random_type();
 	}
-	lasttype = nexttype;
-	nexttype = get_random_type();
-	current_piece = create_piece(3, 0, (PieceType)lasttype);
+	lasttype = type;
+	current_piece = create_piece(3, 0, (PieceType)type);
 	if (piece_collides(current_piece->x, current_piece->y, &current_piece->data))
 	{
 		game_over();
@@ -300,7 +301,7 @@ bool move_piece(int dx, int dy)
 				place_piece(newx, newy - 1, &current_piece->data, current_piece->type);
 				delete current_piece;
 
-				spawn_piece();
+				spawn_piece(nexttype, true);
 			}
 		}
 		else
@@ -328,6 +329,21 @@ PieceData rotate_piece(const PieceData* data)
 		}
 	}
 	return datacpy;
+}
+
+void hold()
+{
+	Piece* current = current_piece;
+	if (hold_piece)
+	{
+		spawn_piece(hold_piece->type, false);
+	}
+	else
+	{
+		spawn_piece(nexttype, true);
+	}
+	hold_piece = current;
+	changed = true;
 }
 
 void process_key(int key, bool kdown)
@@ -395,6 +411,12 @@ void process_key(int key, bool kdown)
 			changed = true;
 		}
 		break;
+	case 81: // Q key
+		if (kdown)
+		{
+			hold();
+		}
+		break;
 	default:
 		break;
 	}
@@ -410,6 +432,20 @@ int brightness(int col, float brightness)
 
 void draw()
 {
+	// Draw hold piece
+	print_s(13, 3, "HOLD", 0x999999, 0);
+	if (hold_piece)
+	{
+		for (int y = 0; y < 4; y++)
+		{
+			for (int x = 0; x < 4; x++)
+			{
+				int color = (x < hold_piece->data.size && y < hold_piece->data.size && hold_piece->data.grid[x + y * hold_piece->data.size]) ? get_color(hold_piece->type) : 0;
+				put_char(13 + x, 4 + y, (char)219, color, 0);
+			}
+		}
+	}
+
 	// Draw next piece
 	print_s(22, 9, "NEXT", 0x999999, 0);
 	Piece* nextpiece = create_piece(0, 0, (PieceType)nexttype);
@@ -513,7 +549,7 @@ void update(float delta)
 
 	if (current_piece == NULL)
 	{
-		spawn_piece();
+		spawn_piece(get_random_type(), true);
 	}
 
 	if (down)
